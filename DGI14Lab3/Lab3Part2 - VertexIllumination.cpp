@@ -44,6 +44,7 @@ vec3 currentColor;
 float depthBuffer[SCREEN_WIDTH][SCREEN_HEIGHT];
 
 vec3 lightPos(0,-0.5,-0.7);
+vec3 reallightPos(0, -0.5, -0.7);
 vec3 lightPower = 1.1f*vec3(1, 1, 1);
 vec3 indirectLightPowerPerArea = 0.5f*vec3(1, 1, 1);
 
@@ -186,12 +187,18 @@ void Draw()
 		vertices[1].normal = n.position;
 		vertices[2].normal = n.position;
 
-		float ref = 3;
+		//cout << "\n" << n.position.x << "\n" << n.position.y << "\n" << n.position.z << endl;
+
+		float ref = 100;
 
 		vertices[0].reflectance = ref;
 		vertices[1].reflectance = ref;
 		vertices[2].reflectance = ref;
 
+		lightPos = reallightPos;
+		n.position = lightPos;
+		RotateVec(n);
+		lightPos = n.position;
 
 		currentColor = triangles[i].color;
 		//DrawPolygonEdges(vertices);
@@ -210,14 +217,16 @@ void VertexShader(const Vertex& v, Pixel& p)
 	p.x = int(focalLength * pos.x * p.zinv) + SCREEN_WIDTH / 2;
 	p.y = int(focalLength * pos.y * p.zinv) + SCREEN_HEIGHT / 2;
 
-	float r = glm::length(v.position - lightPos);
+	float r = glm::length(pos);
 	//cout << r << endl;
-	float d = glm::dot(v.normal, glm::normalize(lightPos - v.position)) /  (4 * 3*r*r);
+	float d = glm::dot(v.normal, glm::normalize(lightPos - v.position)) /  (4.f * 3.f*r*r);
 	//cout << d << endl;
 	vec3 D = lightPower * SDL_max(d, 0);
 	//cout << "\n" << D.x << "\n" << D.y << "\n" << D.z << endl;
 	//SDL_Delay(200);
-	p.illumination = (D + indirectLightPowerPerArea) * v.reflectance;
+	p.illumination = D * v.reflectance + indirectLightPowerPerArea;
+
+	//cout << "\n" << v.normal.x << "\n" << v.normal.y << "\n" << v.normal.z << endl;
 
 	//cout << "\n" << p.illumination.x << "\n" << p.illumination.y << "\n" << p.illumination.z << endl;
 	//SDL_Delay(200);
@@ -368,7 +377,6 @@ void ComputePolygonRows(const vector<Pixel>& vertexPixels,
 		max = SDL_max(p.y, max);
 	}
 
-	//cout << "Steg1 klart\n" << endl;
 
 	// 2. Resize leftPixels and rightPixels
 	// so that they have an element for each row.

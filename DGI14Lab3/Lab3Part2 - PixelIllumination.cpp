@@ -398,15 +398,11 @@ void ComputePolygonRows(const vector<Pixel>& vertexPixels,
 		max = SDL_max(p.y, max);
 	}
 
-	//cout << "Steg1 klart\n" << endl;
-
 	// 2. Resize leftPixels and rightPixels
 	// so that they have an element for each row.
 	leftPixels.resize(max - min + 1);
 	rightPixels.resize(max - min + 1);
-
-	//cout << "Steg2 klart! size: " << leftPixels.size() << "\n" << endl;
-
+	
 	// 3. Initialize the x-	coordinates in leftPixels
 	// to some really large value and the x-coordinates
 	// in rightPixels to some really small value.
